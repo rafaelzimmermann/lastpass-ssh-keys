@@ -10,6 +10,5 @@ fi
 
 for file_path in $private_keys; do
     file_name=$(basename $file_path)
-    pass=$(lpass show  --field=Passphrase $file_name)
     SSH_ASKPASS_FOR=$file_name DISPLAY=":0.0" SSH_ASKPASS="$PWD/ssh_askpass.sh" setsid ssh-add $file_path < /dev/null
 done
