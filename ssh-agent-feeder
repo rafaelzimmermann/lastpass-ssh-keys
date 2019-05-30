@@ -13,5 +13,5 @@ unique_names=$(lpass ls --color=never $lastpass_sshgroup | cut -d ' ' -f1)
 
 for unique_name in $unique_names; do
     private_key=$(lpass show --field="Private Key" "$unique_name")
-    SSH_ASKPASS_FOR=$unique_name DISPLAY=":0.0" SSH_ASKPASS="$PWD/ssh_askpass.sh" setsid ssh-add - <<< "${private_key}"
+    SSH_ASKPASS_FOR=$unique_name DISPLAY=":0.0" SSH_ASKPASS="$PWD/ssh_askpass.sh" nohup ssh-add - <<< "${private_key}"
 done
