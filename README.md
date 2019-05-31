@@ -1,6 +1,6 @@
 # LastPass SSH Keys
 
-Load your SSH private key stored on LastPass into your authentication agent.
+Load your SSH private key stored on LastPass into your authentication agent, so you can easily ssh into your machines without having to remember your passphrases.
 
 ## Dependencies
 
