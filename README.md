@@ -1,4 +1,4 @@
-# LastPass ssh-agent Feeder
+# LastPass SSH Keys
 
 Load your SSH private key stored on LastPass into your authentication agent.
 
@@ -17,5 +17,5 @@ lastpass_sshgroup: The name of the LastPass group where your SSH Keys are in.
 After you create the configuration file, you just need to run the `ssh-agent-feeder.sh`.
 
 ```
-$ ./ssh-agent-feeder
+$ ./lpass-ssh-keys
 ```
