@@ -6,11 +6,11 @@ source .config
 
 function find_private_key {
     unique_name=$1
-    passphrase=$(lpass show  --field=Passphrase $unique_name)
+    passphrase=$(lpass show  --field=Passphrase "$unique_name")
     local_private_keys=$(find $HOME/.ssh/* -not -name "*.pub" -not -name "known_hosts")
     for local_private_key in $local_private_keys; do
-        if ssh-keygen -y -f $local_private_key -P "$passphrase" > /dev/null; then
-            echo $local_private_key
+        if ssh-keygen -y -f "$local_private_key" -P "$passphrase" > /dev/null; then
+            echo "$local_private_key"
             return
         fi
     done
@@ -22,13 +22,13 @@ lpass login "$lastpass_username"
 if ! ps -p "$SSH_AGENT_PID" > /dev/null; then
     eval "$(ssh-agent -s)"
 fi
-unique_names=$(lpass ls --color=never $lastpass_sshgroup | cut -d ' ' -f1)
+unique_names=$(lpass ls --color=never "$lastpass_sshgroup" | cut -d ' ' -f1)
 
 for unique_name in $unique_names; do
     private_key=$(lpass show --field="Private Key" "$unique_name")
     if [ -z "$private_key" ]; then
         private_key_path=$(find_private_key "$unique_name")
-        SSH_ASKPASS_FOR=$unique_name DISPLAY=":0.0" SSH_ASKPASS="$PWD/ssh_askpass.sh" nohup ssh-add $private_key_path
+        SSH_ASKPASS_FOR=$unique_name DISPLAY=":0.0" SSH_ASKPASS="$PWD/ssh_askpass.sh" nohup ssh-add "$private_key_path"
     else
       SSH_ASKPASS_FOR=$unique_name DISPLAY=":0.0" SSH_ASKPASS="$PWD/ssh_askpass.sh" nohup ssh-add - <<< "${private_key}"
     fi
