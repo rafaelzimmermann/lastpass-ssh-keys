@@ -1,6 +1,9 @@
 # LastPass SSH Keys
 
-Load your SSH private key stored on LastPass into your authentication agent, so you can easily ssh into your machines without having to remember your passphrases.
+Use LastPass CLI to add your private keys identities to your authentication agent,
+and easily ssh into your machines without having to remember your passphrases.
+If you store your private key on LastPass you don't even need to have it locally,
+otherwise the script will search for the private key on `$HOME/.ssh` directory.
 
 
 ## Dependencies
