@@ -11,15 +11,21 @@ otherwise the script will search for the private key on `$HOME/.ssh` directory.
 * [LastPass CLI](https://github.com/lastpass/lastpass-cli)
 
 ## How to use
-
-Clone the project, and create a `.config` file based on `.config.template`.
-
-```
-lastpass_username: Your LastPass user name
-lastpass_sshgroup: The name of the LastPass group where your SSH Keys are in.
-```
-After you create the configuration file, you just need to run the `lpass-ssh-keys`.
+Add `lpass-ssh-keys` to your PATH.
 
 ```
-$ ./lpass-ssh-keys
+$ lpass-ssh-keys --help
+
+lpass-ssh-keys : It uses LastPass CLI to add your private keys identities to
+    your authentication agent, and easily ssh into your machines without
+    having to remember your passphrases.
+Usage:
+lpass-ssh-keys [arguments]
+
+Arguments:
+--help (-h): Display this help message
+--username (-u): LastPass username
+--lpgroup (-l): Name of the LastPass group where your SSH Keys are in
+
+$ lpass-ssh-keys --username <LastPass username> --lpgroup <LastPass group>
 ```

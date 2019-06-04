@@ -2,7 +2,19 @@
 
 set -e
 
-source .config
+askpass_script="lpass show  --field=Passphrase \$SSH_ASKPASS_FOR"
+
+function show_usage {
+    echo -e "\n$0 : It uses LastPass CLI to add your private keys identities to
+    your authentication agent, and easily ssh into your machines without
+    having to remember your passphrases."
+    echo -e "Usage:\n$0 [arguments] \n"
+    echo "Arguments:"
+    echo "--help (-h): Display this help message"
+    echo "--username (-u): LastPass username";
+    echo "--lpgroup (-l): Name of the LastPass group where your SSH Keys are in"
+    exit 0;
+}
 
 function find_private_key {
     unique_name=$1
@@ -17,20 +29,61 @@ function find_private_key {
     return 0
 }
 
-lpass login "$lastpass_username"
+tmp_askpass_script=$(mktemp)
+function finish {
+  rm -rf "$tmp_askpass_script"
+}
+
+for param in "$@"; do
+  shift
+  case "$param" in
+    "--help")     set -- "$@" "-h" ;;
+    "--username") set -- "$@" "-u" ;;
+    "--lpgroup")  set -- "$@" "-l" ;;
+    *)            set -- "$@" "$param"
+  esac
+done
+
+OPTIND=1
+while getopts "hu:l:" opt
+do
+  case "$opt" in
+  "h") show_usage; exit 0     ;;
+  "u") username=$OPTARG       ;;
+  "l") lpgroup=$OPTARG        ;;
+  "?") show_usage >&2; exit 1 ;;
+  esac
+done
+shift $(expr $OPTIND - 1)
+
+if [ -z "$username" ] || [ -z "$lpgroup" ]; then
+    show_usage
+    exit 1
+fi
+
+if ! which lpass > /dev/null; then
+    echo -e "\033[0;31mError:\033[0m LastPass CLI is not installed. https://github.com/lastpass/lastpass-cli" >&2
+    exit 1
+fi
+lpass login "$username"
+
 
 if ! ps -p "$SSH_AGENT_PID" > /dev/null; then
     eval "$(ssh-agent -s)"
 fi
-unique_names=$(lpass ls --color=never "$lastpass_sshgroup" | cut -d ' ' -f1)
+unique_names=$(lpass ls --color=never "$lpgroup" | cut -d ' ' -f1)
+
+echo $askpass_script > $tmp_askpass_script
+chmod u+x $tmp_askpass_script
 
 for unique_name in $unique_names; do
     private_key=$(lpass show --field="Private Key" "$unique_name")
     if [ -z "$private_key" ]; then
         private_key_path=$(find_private_key "$unique_name")
-        SSH_ASKPASS_FOR=$unique_name DISPLAY=":0.0" SSH_ASKPASS="$PWD/ssh_askpass.sh" nohup ssh-add "$private_key_path"
+        SSH_ASKPASS_FOR=$unique_name DISPLAY=":0.0" SSH_ASKPASS="$tmp_askpass_script" nohup ssh-add "$private_key_path"
     else
-      SSH_ASKPASS_FOR=$unique_name DISPLAY=":0.0" SSH_ASKPASS="$PWD/ssh_askpass.sh" nohup ssh-add - <<< "${private_key}"
+      SSH_ASKPASS_FOR=$unique_name DISPLAY=":0.0" SSH_ASKPASS="$tmp_askpass_script" nohup ssh-add - <<< "${private_key}" 2> /dev/null
     fi
-
 done
+
+trap finish EXIT
